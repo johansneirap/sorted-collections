@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: npm ci
@@ -35,14 +36,19 @@ jobs:
           npm run test:coverage
           npm run build
 
-      # Intentionally no `publish:` input here. With zero pending changesets,
-      # changesets/action's publish step runs unconditionally and will try to
-      # publish whatever version is currently in package.json — which bit us
-      # on the very first run (attempted to publish 0.1.0 with no changesets
-      # and no explicit go-ahead; only npm's 2FA/token policy stopped it).
-      # This step only ever opens/updates a "Version Packages" PR. The actual
-      # `npm publish` is a deliberate, manual step — see CONTRIBUTING.md.
-      - name: Create Release PR
+      # changesets/action publishes whenever there are zero pending changesets
+      # — which is both "a Version Packages PR was just merged" (intended) and
+      # "no changeset has ever been added" (not intended: bit us once, trying
+      # to publish 0.1.0 unprompted; only npm's 2FA policy stopped it). Safe
+      # here because this repo never reaches a "zero changesets, unpublished
+      # version" state by accident: every PR that should ship adds a
+      # changeset (see CONTRIBUTING.md), so the only way to zero them out is
+      # merging the Version Packages PR this action itself opens — a
+      # deliberate, visible action.
+      - name: Create Release PR or publish to npm
         uses: changesets/action@v1
+        with:
+          publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
