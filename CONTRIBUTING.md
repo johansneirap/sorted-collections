@@ -20,6 +20,10 @@ npm run bench
   the result in the PR description.
 - Code style is enforced automatically in CI (Biome). Don't debate style in review —
   run `npm run lint:fix` and move on.
+- If your change affects the published package (any fix, feature, or breaking change —
+  not docs/tests/CI-only PRs), add a changeset: `npx changeset add`, pick the right
+  bump (patch/minor/major per [Versioning](#versioning)), and commit the generated file
+  in `.changeset/`. Releases and the changelog are generated from these automatically.
 
 ## Reporting a bug
 
