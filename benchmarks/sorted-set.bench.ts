@@ -61,18 +61,22 @@ export async function runSortedSetReadBenchmarks(size: number): Promise<void> {
     .add('SortedSet iterate (sorted order)', () => {
       let sum = 0;
       for (const v of set) sum += v;
+      return sum;
     })
     .add('native Set iterate (insertion order, not sorted)', () => {
       let sum = 0;
       for (const v of nativeSet) sum += v;
+      return sum;
     })
     .add('sorted-containers SortedSet iterate', () => {
       let sum = 0;
       for (const v of scSet) sum += v;
+      return sum;
     })
     .add('sortedkit SortedSet iterate', () => {
       let sum = 0;
       for (const v of skSet) sum += v;
+      return sum;
     });
   await runAndPrint(`SortedSet — full iteration n=${label}`, iterBench);
 }

@@ -78,14 +78,17 @@ export async function runSortedListReadBenchmarks(size: number): Promise<void> {
     .add('SortedList iterate', () => {
       let sum = 0;
       for (const v of list) sum += v;
+      return sum;
     })
     .add('Array iterate (already sorted)', () => {
       let sum = 0;
       for (const v of sortedArr) sum += v;
+      return sum;
     })
     .add('sorted-containers SortedArray iterate', () => {
       let sum = 0;
       for (const v of scArr) sum += v;
+      return sum;
     });
   await runAndPrint(`SortedList — full iteration n=${label}`, iterBench);
 }
