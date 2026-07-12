@@ -62,6 +62,15 @@ between X and Y" — end up re-sorting an array by hand on every insert, which i
   (`union`, `intersection`, `difference`, `isSubsetOf`).
 * **`SortedMap`** — a dictionary ordered by key.
 
+|  | `sorted-collections` | `Array` + manual sort | native `Set`/`Map` | Other npm packages in this space | Python's `sortedcontainers` |
+|---|---|---|---|---|---|
+| `SortedList` | ✅ | — | — | Partial coverage, low adoption | ✅ (`SortedList`) |
+| `SortedSet` | ✅ | — | ✅ unordered | Partial coverage, low adoption | ✅ (`SortedSet`) |
+| `SortedMap` | ✅ | — | ✅ unordered | Partial coverage, low adoption | ✅ (`SortedDict`) |
+| Ordered iteration | ✅ | manual | ❌ | Varies | ✅ |
+| Range queries (`irange`/`islice`) | ✅ | manual | ❌ | Varies | ✅ |
+| Zero dependencies | ✅ | ✅ | ✅ | Varies | ✅ (stdlib) |
+
 All three are backed by the same "list of lists" (bucketed array) technique Python's
 [`sortedcontainers`](https://github.com/grantjenks/python-sortedcontainers) uses —
 buckets of roughly `√n` sorted elements, trading a small amount of positional-access
@@ -178,8 +187,8 @@ machine). Ops/sec, higher is better.
 - [x] `SortedList`, `SortedSet`, `SortedMap` implemented, 100% test coverage
 - [x] Property-based tests against naive reference implementations ([`fast-check`](https://github.com/dubzzz/fast-check))
 - [x] Reproducible benchmark suite
+- [x] Publish `1.0.0` to npm
 - [ ] Documentation site (getting started, use-case guides, API reference)
-- [ ] Publish `1.0.0` to npm
 
 See the [open issues](https://github.com/johansneirap/sorted-collections/issues) for
 proposed features and known issues.
