@@ -36,6 +36,15 @@ jobs:
           npm run test:coverage
           npm run build
 
+      # changesets/action publishes whenever there are zero pending changesets
+      # — which is both "a Version Packages PR was just merged" (intended) and
+      # "no changeset has ever been added" (not intended: bit us once, trying
+      # to publish 0.1.0 unprompted; only npm's 2FA policy stopped it). Safe
+      # here because this repo never reaches a "zero changesets, unpublished
+      # version" state by accident: every PR that should ship adds a
+      # changeset (see CONTRIBUTING.md), so the only way to zero them out is
+      # merging the Version Packages PR this action itself opens — a
+      # deliberate, visible action.
       - name: Create Release PR or publish to npm
         uses: changesets/action@v1
         with:
