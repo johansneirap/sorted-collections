@@ -1,0 +1,68 @@
+{
+  "name": "sorted-collections",
+  "version": "0.1.0",
+  "description": "SortedList, SortedSet and SortedMap for JavaScript/TypeScript — zero runtime dependencies, inspired by Python's sortedcontainers.",
+  "keywords": [
+    "sorted",
+    "sorted-list",
+    "sorted-set",
+    "sorted-map",
+    "data-structures",
+    "sortedcontainers",
+    "typescript"
+  ],
+  "homepage": "https://github.com/johansneirap/sorted-collections#readme",
+  "bugs": {
+    "url": "https://github.com/johansneirap/sorted-collections/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johansneirap/sorted-collections.git"
+  },
+  "license": "MIT",
+  "author": "Johans Neira",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "bench": "tsx benchmarks/run.ts",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3",
+    "@types/node": "^26.1.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "fast-check": "^4.9.0",
+    "tinybench": "^6.0.2",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "packageManager": "npm@11.8.0"
+}
