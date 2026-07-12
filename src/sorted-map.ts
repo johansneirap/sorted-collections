@@ -1,66 +1,125 @@
-import type { SortedSet } from './sorted-set.js';
-import type { ComparatorArg } from './types.js';
+import { SortedList } from './sorted-list.js';
+import { SortedSet } from './sorted-set.js';
+import type { Comparator, ComparatorArg, SortedOptions } from './types.js';
+
+function defaultKeyComparator<K>(a: K, b: K): number {
+  if (typeof a === 'number' && typeof b === 'number') {
+    return a - b;
+  }
+  const left = String(a);
+  const right = String(b);
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
+function comparatorArgs<T>(comparator: Comparator<T>): ComparatorArg<T> {
+  return [{ comparator }] as unknown as ComparatorArg<T>;
+}
 
 /**
  * A dictionary ordered by key.
  *
- * STUB: signatures only, no implementation yet. Pending API review before
- * the real bucket-backed logic is implemented.
+ * Composed from a private `SortedList<[K, V]>` whose comparator only looks at
+ * the key component — reuses the same bucket structure as
+ * `SortedList`/`SortedSet` instead of reimplementing it.
  */
 export class SortedMap<K, V> implements Iterable<[K, V]> {
+  private readonly entriesList: SortedList<[K, V]>;
+  private readonly keyComparator: Comparator<K>;
+
   constructor(entries?: Iterable<[K, V]>, ...options: ComparatorArg<K>) {
-    throw new Error('SortedMap: not implemented');
+    const opts = options[0] as SortedOptions<K> | undefined;
+    this.keyComparator = opts?.comparator ?? (defaultKeyComparator as Comparator<K>);
+    const entryComparator: Comparator<[K, V]> = (a, b) => this.keyComparator(a[0], b[0]);
+    this.entriesList = new SortedList<[K, V]>(undefined, ...comparatorArgs(entryComparator));
+    if (entries) {
+      for (const [key, value] of entries) {
+        this.set(key, value);
+      }
+    }
   }
 
-  /** O(√n) amortized. */
+  private locate(key: K): number {
+    return this.entriesList.bisectLeft([key, undefined as unknown as V]);
+  }
+
+  private findExact(key: K): [K, V] | undefined {
+    const entry = this.entriesList.at(this.locate(key));
+    return entry && this.keyComparator(entry[0], key) === 0 ? entry : undefined;
+  }
+
+  /** O(√n) amortized: replaces the value if the key exists, otherwise inserts. */
   set(key: K, value: V): void {
-    throw new Error(`SortedMap#set(${String(key)}): not implemented`);
+    const idx = this.locate(key);
+    const entry = this.entriesList.at(idx);
+    if (entry && this.keyComparator(entry[0], key) === 0) {
+      this.entriesList.pop(idx);
+    }
+    this.entriesList.add([key, value]);
   }
 
   /** O(log n) to locate the bucket + O(log bucket size) binary search. */
   get(key: K): V | undefined {
-    throw new Error(`SortedMap#get(${String(key)}): not implemented`);
+    return this.findExact(key)?.[1];
   }
 
   delete(key: K): boolean {
-    throw new Error(`SortedMap#delete(${String(key)}): not implemented`);
+    const idx = this.locate(key);
+    const entry = this.entriesList.at(idx);
+    if (entry && this.keyComparator(entry[0], key) === 0) {
+      this.entriesList.pop(idx);
+      return true;
+    }
+    return false;
   }
 
   has(key: K): boolean {
-    throw new Error(`SortedMap#has(${String(key)}): not implemented`);
+    return this.findExact(key) !== undefined;
   }
 
-  keys(): SortedSet<K> | IterableIterator<K> {
-    throw new Error('SortedMap#keys: not implemented');
+  /** A snapshot `SortedSet` of the current keys — not a live view. */
+  keys(): SortedSet<K> {
+    return new SortedSet<K>(this.keysGenerator(), ...comparatorArgs(this.keyComparator));
   }
 
-  values(): IterableIterator<V> {
-    throw new Error('SortedMap#values: not implemented');
+  private *keysGenerator(): Generator<K> {
+    for (const [key] of this.entriesList) {
+      yield key;
+    }
+  }
+
+  *values(): IterableIterator<V> {
+    for (const [, value] of this.entriesList) {
+      yield value;
+    }
   }
 
   entries(): IterableIterator<[K, V]> {
-    throw new Error('SortedMap#entries: not implemented');
+    return this.entriesList[Symbol.iterator]();
   }
 
   /** Iterates `[key, value]` pairs with keys in `[minKey, maxKey]`. */
   irange(minKey?: K, maxKey?: K): IterableIterator<[K, V]> {
-    throw new Error('SortedMap#irange: not implemented');
+    const min = minKey === undefined ? undefined : ([minKey, undefined as unknown as V] as [K, V]);
+    const max = maxKey === undefined ? undefined : ([maxKey, undefined as unknown as V] as [K, V]);
+    return this.entriesList.irange(min, max);
   }
 
   /** O(√n). Entry at ordinal position `index` in key order. */
   at(index: number): [K, V] | undefined {
-    throw new Error(`SortedMap#at(${index}): not implemented`);
+    return this.entriesList.at(index);
   }
 
   get size(): number {
-    throw new Error('SortedMap#size: not implemented');
+    return this.entriesList.length;
   }
 
   clear(): void {
-    throw new Error('SortedMap#clear: not implemented');
+    this.entriesList.clear();
   }
 
   [Symbol.iterator](): IterableIterator<[K, V]> {
-    throw new Error('SortedMap#[Symbol.iterator]: not implemented');
+    return this.entriesList[Symbol.iterator]();
   }
 }
