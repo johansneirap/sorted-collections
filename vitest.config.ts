@@ -7,9 +7,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/**/*.ts'],
-      // sorted-set.ts/sorted-map.ts are still unimplemented stubs (roadmap: SortedList
-      // ships first). Drop this exclusion once they have real logic + tests.
-      exclude: ['src/index.ts', 'src/sorted-set.ts', 'src/sorted-map.ts'],
+      // sorted-map.ts is still an unimplemented stub (roadmap: SortedMap ships last).
+      // Drop this exclusion once it has real logic + tests.
+      exclude: ['src/index.ts', 'src/sorted-map.ts'],
       thresholds: {
         lines: 95,
         functions: 95,
