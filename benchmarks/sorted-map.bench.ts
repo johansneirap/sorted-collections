@@ -63,18 +63,22 @@ export async function runSortedMapReadBenchmarks(size: number): Promise<void> {
     .add('SortedMap iterate (sorted by key)', () => {
       let sum = 0;
       for (const [k] of map) sum += k;
+      return sum;
     })
     .add('native Map iterate (insertion order, not sorted)', () => {
       let sum = 0;
       for (const [k] of nativeMap) sum += k;
+      return sum;
     })
     .add('sorted-containers SortedMap iterate', () => {
       let sum = 0;
       for (const [k] of scMap) sum += k;
+      return sum;
     })
     .add('sortedkit SortedMap iterate', () => {
       let sum = 0;
       for (const [k] of skMap) sum += k;
+      return sum;
     });
   await runAndPrint(`SortedMap — full iteration n=${label}`, iterBench);
 }
