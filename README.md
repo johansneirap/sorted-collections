@@ -2,6 +2,7 @@
 
 [![CI][ci-shield]][ci-url]
 [![npm version][npm-shield]][npm-url]
+[![Bundle size][bundle-shield]][bundle-url]
 [![License: MIT][license-shield]][license-url]
 [![Zero dependencies][deps-shield]][deps-url]
 
@@ -55,7 +56,8 @@ order as you mutate it. Common patterns — leaderboards, order books, "give me 
 between X and Y" — end up re-sorting an array by hand on every insert, which is
 `O(n log n)` repeated: fine for a handful of items, expensive at scale.
 
-`sorted-collections` gives you three structures instead, with zero runtime dependencies:
+`sorted-collections` gives you three structures instead, with zero runtime dependencies
+and a ~2 KB gzipped bundle (see the badge above for the current, live number):
 
 * **`SortedList`** — a list that keeps insertion order sorted automatically.
 * **`SortedSet`** — a sorted set with no duplicates, plus set-theory operations
@@ -242,6 +244,8 @@ reports and feature requests both welcome.
 [ci-url]: https://github.com/johansneirap/sorted-collections/actions/workflows/ci.yml
 [npm-shield]: https://img.shields.io/npm/v/sorted-collections.svg
 [npm-url]: https://www.npmjs.com/package/sorted-collections
+[bundle-shield]: https://img.shields.io/bundlephobia/minzip/sorted-collections
+[bundle-url]: https://bundlephobia.com/package/sorted-collections
 [license-shield]: https://img.shields.io/npm/l/sorted-collections.svg
 [license-url]: https://github.com/johansneirap/sorted-collections/blob/main/LICENSE
 [deps-shield]: https://img.shields.io/badge/dependencies-0-brightgreen.svg

@@ -29,11 +29,24 @@ function comparatorArgs<T>(comparator: Comparator<T>): ComparatorArg<T> {
  * only once per candidate (not twice, since the search side needs no
  * `entry[0]` unwrapping) and avoids allocating a throwaway `[key, undefined]`
  * search tuple per call.
+ *
+ * @example
+ * ```ts
+ * const byPrice = new SortedMap<number, string>([[101.5, 'order-1'], [99.75, 'order-2']]);
+ * [...byPrice.keys()]; // [99.75, 101.5]
+ * ```
  */
 export class SortedMap<K, V> implements Iterable<[K, V]> {
   private readonly engine: BucketEngine<[K, V]>;
   private readonly keyComparator: Comparator<K>;
 
+  /**
+   * @example
+   * ```ts
+   * new SortedMap<number, string>(); // empty
+   * new SortedMap<number, string>([[2, 'b'], [1, 'a']]); // ordered by key: 1, 2
+   * ```
+   */
   constructor(entries?: Iterable<[K, V]>, ...options: ComparatorArg<K>) {
     const opts = options[0] as SortedOptions<K> | undefined;
     this.keyComparator = opts?.comparator ?? (defaultKeyComparator as Comparator<K>);
@@ -46,25 +59,65 @@ export class SortedMap<K, V> implements Iterable<[K, V]> {
     }
   }
 
-  /** O(log n) to locate + O(1) to replace in place, or O(√n) amortized to insert. */
+  /**
+   * O(log n) to locate + O(1) to replace in place, or O(√n) amortized to insert.
+   *
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>();
+   * byPrice.set(101.5, 'order-1');
+   * byPrice.set(101.5, 'order-1-updated'); // overwrites, doesn't grow size
+   * ```
+   */
   set(key: K, value: V): void {
     this.engine.set([key, value]);
   }
 
-  /** O(log n): binary search for the bucket, then binary search within it. */
+  /**
+   * O(log n): binary search for the bucket, then binary search within it.
+   *
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[101.5, 'order-1']]);
+   * byPrice.get(101.5); // 'order-1'
+   * byPrice.get(1); // undefined
+   * ```
+   */
   get(key: K): V | undefined {
     return this.engine.findBy((entry) => this.keyComparator(entry[0], key))?.[1];
   }
 
+  /**
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[101.5, 'order-1']]);
+   * byPrice.delete(101.5); // true
+   * byPrice.delete(101.5); // false — already gone
+   * ```
+   */
   delete(key: K): boolean {
     return this.engine.removeBy((entry) => this.keyComparator(entry[0], key));
   }
 
+  /**
+   * @example
+   * ```ts
+   * new SortedMap<number, string>([[1, 'a']]).has(1); // true
+   * ```
+   */
   has(key: K): boolean {
     return this.engine.hasBy((entry) => this.keyComparator(entry[0], key));
   }
 
-  /** A snapshot `SortedSet` of the current keys — not a live view. */
+  /**
+   * A snapshot `SortedSet` of the current keys — not a live view.
+   *
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[2, 'b'], [1, 'a']]);
+   * [...byPrice.keys()]; // [1, 2]
+   * ```
+   */
   keys(): SortedSet<K> {
     return new SortedSet<K>(this.keysGenerator(), ...comparatorArgs(this.keyComparator));
   }
@@ -75,36 +128,86 @@ export class SortedMap<K, V> implements Iterable<[K, V]> {
     }
   }
 
+  /**
+   * @example
+   * ```ts
+   * [...new SortedMap<number, string>([[2, 'b'], [1, 'a']]).values()]; // ['a', 'b']
+   * ```
+   */
   *values(): IterableIterator<V> {
     for (const [, value] of this.engine) {
       yield value;
     }
   }
 
+  /**
+   * @example
+   * ```ts
+   * [...new SortedMap<number, string>([[2, 'b'], [1, 'a']]).entries()]; // [[1, 'a'], [2, 'b']]
+   * ```
+   */
   entries(): IterableIterator<[K, V]> {
     return this.engine[Symbol.iterator]();
   }
 
-  /** Iterates `[key, value]` pairs with keys in `[minKey, maxKey]`. */
+  /**
+   * Iterates `[key, value]` pairs with keys in `[minKey, maxKey]`.
+   *
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[95, 'a'], [100, 'b'], [105, 'c']]);
+   * [...byPrice.irange(95, 100)]; // [[95, 'a'], [100, 'b']]
+   * ```
+   */
   irange(minKey?: K, maxKey?: K): IterableIterator<[K, V]> {
     const min = minKey === undefined ? undefined : ([minKey, undefined as unknown as V] as [K, V]);
     const max = maxKey === undefined ? undefined : ([maxKey, undefined as unknown as V] as [K, V]);
     return this.engine.irange(min, max);
   }
 
-  /** O(√n). Entry at ordinal position `index` in key order. */
+  /**
+   * O(√n). Entry at ordinal position `index` in key order.
+   *
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[2, 'b'], [1, 'a']]);
+   * byPrice.at(0); // [1, 'a']
+   * ```
+   */
   at(index: number): [K, V] | undefined {
     return this.engine.at(index);
   }
 
+  /**
+   * @example
+   * ```ts
+   * new SortedMap<number, string>([[1, 'a'], [2, 'b']]).size; // 2
+   * ```
+   */
   get size(): number {
     return this.engine.length;
   }
 
+  /**
+   * @example
+   * ```ts
+   * const byPrice = new SortedMap<number, string>([[1, 'a']]);
+   * byPrice.clear();
+   * byPrice.size; // 0
+   * ```
+   */
   clear(): void {
     this.engine.clear();
   }
 
+  /**
+   * @example
+   * ```ts
+   * for (const [key, value] of new SortedMap([[2, 'b'], [1, 'a']])) {
+   *   console.log(key, value); // 1 'a', then 2 'b'
+   * }
+   * ```
+   */
   [Symbol.iterator](): IterableIterator<[K, V]> {
     return this.engine[Symbol.iterator]();
   }
