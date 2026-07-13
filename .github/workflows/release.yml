@@ -37,6 +37,12 @@ jobs:
           npm run test:coverage
           npm run build
 
+      - name: Verify package exports, types, and bundle size
+        run: |
+          npm run publint
+          npm run attw
+          npm run size
+
       # changesets/action publishes whenever there are zero pending changesets
       # — which is both "a Version Packages PR was just merged" (intended) and
       # "no changeset has ever been added" (not intended: bit us once, trying

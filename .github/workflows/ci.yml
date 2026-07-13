@@ -39,3 +39,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify package exports (publint)
+        run: npm run publint
+
+      - name: Verify published types resolve correctly (are the types wrong)
+        run: npm run attw
+
+      - name: Bundle size budget
+        run: npm run size
