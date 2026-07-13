@@ -26,6 +26,9 @@ npm run bench
   not docs/tests/CI-only PRs), add a changeset: `npx changeset add`, pick the right
   bump (patch/minor/major per [Versioning](#versioning)), and commit the generated file
   in `.changeset/`. Releases and the changelog are generated from these automatically.
+- If your change touches the public API, update the relevant guide in `docs-site/` too.
+  `npm run docs:dev` serves the docs site locally (API reference regenerates from
+  source on every `docs:build`/`docs:dev`, so it can't go stale on its own).
 
 ## Reporting a bug
 

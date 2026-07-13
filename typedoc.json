@@ -1,0 +1,15 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs-site/api",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  "readme": "none",
+  "hideBreadcrumbs": true,
+  "hidePageHeader": true,
+  "excludeInternal": true,
+  "sidebar": {
+    "autoConfiguration": true,
+    "format": "vitepress"
+  },
+  "docsRoot": "docs-site"
+}
