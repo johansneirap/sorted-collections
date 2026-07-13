@@ -29,6 +29,11 @@ npm run bench
 - If your change touches the public API, update the relevant guide in `docs-site/` too.
   `npm run docs:dev` serves the docs site locally (API reference regenerates from
   source on every `docs:build`/`docs:dev`, so it can't go stale on its own).
+- Changes to `package.json`'s `exports`/`main`/`types` or to `tsup.config.ts` also run
+  through `npm run publint` and `npm run attw` in CI — these catch ESM/CJS/types
+  resolution mismatches that only show up in a consumer's project, not locally.
+  `npm run size` gates the ESM bundle at 3 KB; bump the limit deliberately in the same
+  PR if a change legitimately needs more (don't let it drift silently).
 
 ## Reporting a bug
 

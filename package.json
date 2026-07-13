@@ -25,9 +25,14 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -57,14 +62,27 @@
     "docs:dev": "npm run docs:api && vitepress dev docs-site",
     "docs:build": "npm run docs:api && vitepress build docs-site",
     "docs:preview": "vitepress preview docs-site",
-    "prepublishOnly": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+    "publint": "publint",
+    "attw": "attw --pack .",
+    "size": "size-limit",
+    "prepublishOnly": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run publint && npm run attw && npm run size"
   },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "3 KB"
+    }
+  ],
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@biomejs/biome": "^2.5.3",
     "@changesets/cli": "^2.31.0",
+    "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^4.1.10",
     "fast-check": "^4.9.0",
+    "publint": "^0.3.21",
+    "size-limit": "^12.1.0",
     "sorted-containers": "^0.4.0",
     "sortedkit": "^0.1.0",
     "tinybench": "^6.0.2",
