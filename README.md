@@ -12,7 +12,7 @@
   <p align="center">
     SortedList, SortedSet, and SortedMap for JavaScript/TypeScript
     <br />
-    <a href="#usage"><strong>Explore the usage examples »</strong></a>
+    <a href="https://johansneirap.github.io/sorted-collections/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/johansneirap/sorted-collections/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
@@ -136,8 +136,8 @@ Range queries work the same way across all three structures:
 [...byPrice.irange(undefined, 100)];
 ```
 
-_Full API reference and use-case guides (leaderboards, order books, time-series) are
-coming to a docs site — see [Roadmap](#roadmap)._
+_Full API reference and use-case guides (leaderboards, order books, time-series) live at
+[johansneirap.github.io/sorted-collections](https://johansneirap.github.io/sorted-collections/)._
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -188,7 +188,7 @@ machine). Ops/sec, higher is better.
 - [x] Property-based tests against naive reference implementations ([`fast-check`](https://github.com/dubzzz/fast-check))
 - [x] Reproducible benchmark suite
 - [x] Publish `1.0.0` to npm
-- [ ] Documentation site (getting started, use-case guides, API reference)
+- [x] Documentation site (getting started, use-case guides, API reference)
 
 See the [open issues](https://github.com/johansneirap/sorted-collections/issues) for
 proposed features and known issues.
