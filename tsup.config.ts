@@ -8,5 +8,6 @@ export default defineConfig({
   clean: true,
   splitting: false,
   treeshake: true,
+  minify: true,
   target: 'es2020',
 });

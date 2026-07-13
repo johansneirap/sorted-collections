@@ -13,6 +13,7 @@ const guideAndReferenceSidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Leaderboard (SortedSet)', link: '/guide/leaderboard' },
       { text: 'Order Book (SortedMap)', link: '/guide/order-book' },
       { text: 'Scheduling (SortedList)', link: '/guide/scheduling' },
+      { text: 'Migrating from Array + sort()', link: '/guide/migration' },
     ],
   },
   {

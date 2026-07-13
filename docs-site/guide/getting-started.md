@@ -95,5 +95,6 @@ structures:
 - [Leaderboard with `SortedSet`](/guide/leaderboard)
 - [Order book with `SortedMap`](/guide/order-book)
 - [Scheduling with `SortedList`](/guide/scheduling)
+- [Migrating from Array + sort()](/guide/migration)
 - [Full API reference](/api/classes/SortedList)
 - [Benchmarks](/benchmarks)
