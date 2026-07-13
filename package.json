@@ -1,6 +1,6 @@
 {
   "name": "sorted-collections",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SortedList, SortedSet and SortedMap for JavaScript/TypeScript — zero runtime dependencies, inspired by Python's sortedcontainers.",
   "keywords": [
     "sorted",
