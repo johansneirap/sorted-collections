@@ -5,6 +5,9 @@ hero:
   name: sorted-collections
   text: Sorted data structures for JS/TS
   tagline: SortedList, SortedSet, and SortedMap — zero runtime dependencies, inspired by Python's sortedcontainers.
+  image:
+    src: /hero-logo.svg
+    alt: Ascending sorted bars
   actions:
     - theme: brand
       text: Getting Started
