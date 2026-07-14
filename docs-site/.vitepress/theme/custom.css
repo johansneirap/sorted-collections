@@ -10,13 +10,21 @@
   --vp-c-brand-3: #1d4ed8;
   --vp-c-brand-soft: rgba(59, 130, 246, 0.14);
 
+  /*
+   * Shared brand gradient — the single source of truth for every gradient
+   * accent on the site (hero title, CTAs, chart bars, emphasis text). This is
+   * the blue-to-cyan gradient originally used on the benchmark chart bars;
+   * the hero title now adopts it too instead of its own one-off gradient.
+   */
+  --sc-accent-cyan: #22d3ee;
+  --sc-gradient-brand: linear-gradient(90deg, var(--vp-c-brand-1), var(--sc-accent-cyan));
+
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(120deg, #3b82f6 30%, #8b5cf6);
+  --vp-home-hero-name-background: var(--sc-gradient-brand);
 
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
     rgba(59, 130, 246, 0.5) 30%,
-    rgba(139, 92, 246, 0.45) 60%,
     rgba(34, 211, 238, 0.4) 100%
   );
   --vp-home-hero-image-filter: blur(56px);
@@ -31,7 +39,6 @@
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
     rgba(59, 130, 246, 0.35) 30%,
-    rgba(139, 92, 246, 0.3) 60%,
     rgba(34, 211, 238, 0.28) 100%
   );
 }
@@ -79,4 +86,31 @@
 .VPFeature:hover {
   transform: translateY(-2px);
   border-color: var(--vp-c-brand-1);
+}
+
+/*
+ * Reusable brand-gradient utilities. Use `.sc-gradient-text` (e.g. `<span
+ * class="sc-gradient-text">...</span>` inside a markdown page) to highlight a
+ * headline or callout the same way the homepage hero title is highlighted.
+ * Keep this to one or two accents per page — it loses its punch if every
+ * heading gets it.
+ */
+.sc-gradient-text {
+  background: var(--sc-gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Primary CTA buttons (e.g. "Getting Started") pick up the brand gradient instead of a flat fill. */
+.VPButton.brand {
+  background: var(--sc-gradient-brand);
+  border-color: transparent;
+  transition: filter 0.2s ease;
+}
+
+.VPButton.brand:hover {
+  background: var(--sc-gradient-brand);
+  border-color: transparent;
+  filter: brightness(1.08);
 }
