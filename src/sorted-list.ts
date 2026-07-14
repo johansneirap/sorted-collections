@@ -40,12 +40,30 @@ export class SortedList<T> implements Iterable<T> {
   constructor(iterable?: Iterable<T>, ...options: ComparatorArg<T>) {
     const opts = options[0] as SortedOptions<T> | undefined;
     const comparator = opts?.comparator ?? (defaultComparator as Comparator<T>);
-    this.engine = new BucketEngine<T>(comparator);
-    // Goes through `this.update` -> `this.add` (not the engine's) so that a
-    // SortedSet's overridden, deduping `add` applies during construction too.
-    if (iterable) {
-      this.update(iterable);
-    }
+    const sorted = iterable ? this.prepareSorted(iterable, comparator) : [];
+    this.engine = BucketEngine.fromSorted(sorted, comparator);
+  }
+
+  /**
+   * Materializes and sorts `iterable` for the constructor to cut into
+   * buckets in one O(n) pass. A hook (not a field/engine access — `engine`
+   * isn't assigned yet when this runs) so `SortedSet` can additionally
+   * dedupe adjacent equal elements while still reusing this sort step.
+   */
+  protected prepareSorted(iterable: Iterable<T>, comparator: Comparator<T>): T[] {
+    return Array.from(iterable).sort(comparator);
+  }
+
+  /**
+   * A read-only iterable/array factory, paralleling `Array.from`.
+   *
+   * @example
+   * ```ts
+   * SortedList.from([3, 1, 2]); // same as new SortedList([3, 1, 2])
+   * ```
+   */
+  static from<T>(iterable: Iterable<T>, ...options: ComparatorArg<T>): SortedList<T> {
+    return new SortedList<T>(iterable, ...options);
   }
 
   /** Safe to call from subclasses/clone: both `ComparatorArg<T>` branches accept `{ comparator }`. */

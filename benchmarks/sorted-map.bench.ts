@@ -31,6 +31,33 @@ export async function runSortedMapInsertBenchmarks(size: number): Promise<void> 
   await runAndPrint(`SortedMap — insert n=${label} one at a time`, bench);
 }
 
+/**
+ * Bulk-construction benchmark: `new SortedMap(entries)` (fromSorted +
+ * dedupe-keeping-last fast path) vs. the old behavior of building empty and
+ * calling `set()` per entry — kept accessible here via a plain loop, even
+ * though the constructor no longer builds this way.
+ */
+export async function runSortedMapConstructionBenchmarks(size: number): Promise<void> {
+  const keys = shuffledSequential(size);
+  const entries: [number, number][] = keys.map((k) => [k, k * 2]);
+  const label = size.toLocaleString('en-US');
+
+  const bench = new Bench({ time: 500 });
+  bench
+    .add('new SortedMap(entries) (bulk fromSorted)', () => {
+      new SortedMap<number, number>(entries);
+    })
+    .add('empty SortedMap + set() per entry (old path)', () => {
+      const map = new SortedMap<number, number>();
+      for (const [k, v] of entries) map.set(k, v);
+    })
+    .add('sorted-containers new SortedMap(entries)', () => {
+      new SCSortedMap<number, number>(entries);
+    });
+
+  await runAndPrint(`SortedMap — construction from n=${label} entries`, bench);
+}
+
 export async function runSortedMapReadBenchmarks(size: number): Promise<void> {
   const keys = shuffledSequential(size);
   const entries: [number, number][] = keys.map((k) => [k, k * 2]);

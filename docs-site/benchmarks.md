@@ -11,7 +11,8 @@ machine.
 Insert benchmarks (`add`/`set`) are capped at n=5,000: the naive "array + resort on
 every insert" comparison point is `O(n² log n)` and would take minutes at n=100,000.
 Read benchmarks (`has`/`get`/`at`/iteration) build the structure once per size, then
-time only the read operation, so they run up to n=100,000.
+time only the read operation, so they run up to n=100,000. Construction benchmarks
+(below) have no naive-resort baseline in the mix, so they run up to n=1,000,000.
 
 ## SortedList
 
@@ -22,6 +23,12 @@ time only the read operation, so they run up to n=100,000.
 | `at(index)`, n=100,000 | 4,474/s | 758,064/s (native indexing) |
 | full iteration, n=100,000 | 1,114/s | 2,577/s |
 
+| Construction | bulk (`new SortedList(data)`) | per-element (`add()` in a loop) |
+|---|---:|---:|
+| n=1,000 | 17,316/s | 32,250/s |
+| n=100,000 | 85/s | 93/s |
+| n=1,000,000 | 7/s | 5/s |
+
 ## SortedSet
 
 | Operation | `SortedSet` | native `Set` |
@@ -30,6 +37,12 @@ time only the read operation, so they run up to n=100,000.
 | `has()`, n=100,000 | 20,121/s | 835,314/s |
 | full iteration, n=100,000 | 1,117/s | 2,577/s |
 
+| Construction | bulk (`new SortedSet(data)`) | per-element (`add()` in a loop) |
+|---|---:|---:|
+| n=1,000 | 16,065/s | 20,200/s |
+| n=100,000 | 79/s | 55/s |
+| n=1,000,000 | 7/s | 3/s |
+
 ## SortedMap
 
 | Operation | `SortedMap` | native `Map` |
@@ -37,6 +50,23 @@ time only the read operation, so they run up to n=100,000.
 | `set()`, one at a time, n=5,000 | 1,397/s | 7,056/s |
 | `get()`, n=100,000 | 12,453/s | 834,080/s |
 | full iteration, n=100,000 | 1,005/s | 2,473/s |
+
+| Construction | bulk (`new SortedMap(entries)`) | per-element (`set()` in a loop) |
+|---|---:|---:|
+| n=1,000 | 14,121/s | 12,476/s |
+| n=100,000 | 56/s | 33/s |
+| n=1,000,000 | 3/s | 1/s |
+
+## Bulk construction: when the old per-element path still wins
+
+`new SortedX(iterable)` now sorts the input once and cuts it directly into buckets,
+instead of inserting elements one at a time. At small n (~1,000), `SortedList` and
+`SortedSet` are marginally *slower* to bulk-construct than the old per-element path: the
+fixed cost of one `Array.prototype.sort()` call doesn't have much to amortize over yet,
+since the bucket size floor (32 elements) already keeps per-element insertion cheap at
+that scale. The absolute difference is single-digit microseconds either way — not
+something to design around. From roughly n=100,000 on, bulk construction wins decisively
+across all three structures, up to 3x faster at n=1,000,000.
 
 ## When this library is (and isn't) the right call
 

@@ -64,6 +64,92 @@ describe('SortedMap — set/get/has/delete', () => {
   });
 });
 
+describe('SortedMap — bulk construction from an iterable', () => {
+  it('empty entries', () => {
+    expect([...new SortedMap<number, string>([])]).toEqual([]);
+  });
+
+  it('single entry', () => {
+    const map = new SortedMap<number, string>([[7, 'seven']]);
+    expect([...map]).toEqual([[7, 'seven']]);
+  });
+
+  it('already sorted-by-key input', () => {
+    const map = new SortedMap<number, string>([
+      [1, 'a'],
+      [2, 'b'],
+      [3, 'c'],
+    ]);
+    expect([...map]).toEqual([
+      [1, 'a'],
+      [2, 'b'],
+      [3, 'c'],
+    ]);
+  });
+
+  it('reverse-sorted-by-key input', () => {
+    const map = new SortedMap<number, string>([
+      [3, 'c'],
+      [2, 'b'],
+      [1, 'a'],
+    ]);
+    expect([...map.keys()]).toEqual([1, 2, 3]);
+  });
+
+  it('duplicate keys: the last entry in iteration order wins', () => {
+    const map = new SortedMap<number, string>([
+      [2, 'two'],
+      [1, 'one'],
+      [1, 'uno'],
+      [2, 'dos'],
+    ]);
+    expect(map.size).toBe(2);
+    expect(map.get(1)).toBe('uno');
+    expect(map.get(2)).toBe('dos');
+  });
+
+  it('custom comparator', () => {
+    const map = new SortedMap<number, string>(
+      [
+        [1, 'a'],
+        [2, 'b'],
+        [3, 'c'],
+      ],
+      { comparator: (a, b) => b - a },
+    );
+    expect([...map.keys()]).toEqual([3, 2, 1]);
+  });
+
+  it('accepts a non-array iterable (generator)', () => {
+    function* gen(): Generator<[number, string]> {
+      yield [3, 'c'];
+      yield [1, 'a'];
+      yield [2, 'b'];
+    }
+    const map = new SortedMap<number, string>(gen());
+    expect([...map.keys()]).toEqual([1, 2, 3]);
+  });
+
+  describe('bucket-size boundaries (MIN_BUCKET_SIZE = 32)', () => {
+    it.each([31, 32, 33])('produces a correctly ordered map for n=%i', (n) => {
+      const keys = Array.from({ length: n }, (_, i) => i).sort(() => Math.random() - 0.5);
+      const map = new SortedMap<number, string>(keys.map((k) => [k, `v${k}`]));
+      expect(map.size).toBe(n);
+      expect([...map.keys()]).toEqual(Array.from({ length: n }, (_, i) => i));
+    });
+  });
+
+  it('SortedMap.from() is equivalent to the constructor', () => {
+    expect([...SortedMap.from([[2, 'b'] as [number, string], [1, 'a']])]).toEqual([
+      ...new SortedMap<number, string>([
+        [2, 'b'],
+        [1, 'a'],
+      ]),
+    ]);
+    expect(SortedMap.from([[1, 'a'] as [number, string]])).toBeInstanceOf(SortedMap);
+  });
+});
+
 describe('SortedMap — ordering', () => {
   it('iterates entries sorted by key regardless of insertion order', () => {
     const map = new SortedMap<number, string>();

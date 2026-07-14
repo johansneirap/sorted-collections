@@ -17,6 +17,19 @@ function comparatorArgs<T>(comparator: Comparator<T>): ComparatorArg<T> {
   return [{ comparator }] as unknown as ComparatorArg<T>;
 }
 
+/** Collapses adjacent equal-key runs (by `comparator`) to their last element — same "later wins" semantics as `new Map()`. */
+function dedupeKeepingLast<T>(sorted: T[], comparator: Comparator<T>): T[] {
+  const result: T[] = [];
+  for (const value of sorted) {
+    if (result.length > 0 && comparator(result[result.length - 1] as T, value) === 0) {
+      result[result.length - 1] = value;
+    } else {
+      result.push(value);
+    }
+  }
+  return result;
+}
+
 /**
  * A dictionary ordered by key.
  *
@@ -51,12 +64,19 @@ export class SortedMap<K, V> implements Iterable<[K, V]> {
     const opts = options[0] as SortedOptions<K> | undefined;
     this.keyComparator = opts?.comparator ?? (defaultKeyComparator as Comparator<K>);
     const entryComparator: Comparator<[K, V]> = (a, b) => this.keyComparator(a[0], b[0]);
-    this.engine = new BucketEngine<[K, V]>(entryComparator);
-    if (entries) {
-      for (const [key, value] of entries) {
-        this.set(key, value);
-      }
-    }
+    const sorted = entries ? Array.from(entries).sort(entryComparator) : [];
+    const deduped = dedupeKeepingLast(sorted, entryComparator);
+    this.engine = BucketEngine.fromSorted(deduped, entryComparator);
+  }
+
+  /**
+   * @example
+   * ```ts
+   * SortedMap.from([[2, 'b'], [1, 'a']]); // same as new SortedMap([[2, 'b'], [1, 'a']])
+   * ```
+   */
+  static from<K, V>(entries: Iterable<[K, V]>, ...options: ComparatorArg<K>): SortedMap<K, V> {
+    return new SortedMap<K, V>(entries, ...options);
   }
 
   /**

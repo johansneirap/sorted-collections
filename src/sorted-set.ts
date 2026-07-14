@@ -1,4 +1,5 @@
 import { SortedList } from './sorted-list.js';
+import type { Comparator, ComparatorArg } from './types.js';
 
 /**
  * Like {@link SortedList}, but rejects duplicates (compared via the
@@ -14,6 +15,33 @@ import { SortedList } from './sorted-list.js';
  * ```
  */
 export class SortedSet<T> extends SortedList<T> {
+  /**
+   * Dedupes adjacent equal elements (by comparator) after the base class's
+   * sort, keeping the first occurrence — matching {@link add}'s no-op-if-
+   * present semantics, which is what incremental construction produced
+   * before bulk construction existed.
+   */
+  protected override prepareSorted(iterable: Iterable<T>, comparator: Comparator<T>): T[] {
+    const sorted = super.prepareSorted(iterable, comparator);
+    const deduped: T[] = [];
+    for (const value of sorted) {
+      if (deduped.length === 0 || comparator(deduped[deduped.length - 1] as T, value) !== 0) {
+        deduped.push(value);
+      }
+    }
+    return deduped;
+  }
+
+  /**
+   * @example
+   * ```ts
+   * SortedSet.from([3, 1, 2, 1]); // same as new SortedSet([3, 1, 2, 1])
+   * ```
+   */
+  static override from<T>(iterable: Iterable<T>, ...options: ComparatorArg<T>): SortedSet<T> {
+    return new SortedSet<T>(iterable, ...options);
+  }
+
   /**
    * O(log n) `has` check + O(√n) amortized insert if the value is new.
    *

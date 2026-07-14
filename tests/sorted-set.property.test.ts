@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { SortedSet } from '../src/sorted-set.js';
+import type { Comparator } from '../src/types.js';
 
 type Op =
   | { type: 'add'; value: number }
@@ -76,6 +77,29 @@ describe('SortedSet — property-based (fast-check)', () => {
           expect([...a.intersection(b)]).toEqual(intersection);
           expect([...a.difference(b)]).toEqual(difference);
           expect(a.isSubsetOf(b)).toBe(isSubset);
+        },
+      ),
+      { numRuns: 300 },
+    );
+  });
+
+  it('constructing from a random iterable matches building empty + add() per element, including custom comparators', () => {
+    const comparatorArbitrary = fc.constantFrom<Comparator<number>>(
+      (a, b) => a - b,
+      (a, b) => b - a,
+      (a, b) => Math.abs(a) - Math.abs(b),
+      (a, b) => (((a % 5) + 5) % 5) - (((b % 5) + 5) % 5),
+    );
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -30, max: 30 }), { minLength: 0, maxLength: 300 }),
+        comparatorArbitrary,
+        (values, comparator) => {
+          const built = new SortedSet<number>(values, { comparator });
+          const incremental = new SortedSet<number>(undefined, { comparator });
+          for (const v of values) incremental.add(v);
+          expect([...built]).toEqual([...incremental]);
+          expect(built.length).toBe(incremental.length);
         },
       ),
       { numRuns: 300 },

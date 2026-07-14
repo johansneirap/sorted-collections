@@ -47,6 +47,61 @@ describe('SortedSet — deduplication', () => {
   });
 });
 
+describe('SortedSet — bulk construction from an iterable', () => {
+  it('empty iterable', () => {
+    expect([...new SortedSet<number>([])]).toEqual([]);
+  });
+
+  it('single element', () => {
+    expect([...new SortedSet<number>([7])]).toEqual([7]);
+  });
+
+  it('already sorted input, no duplicates', () => {
+    expect([...new SortedSet<number>([1, 2, 3])]).toEqual([1, 2, 3]);
+  });
+
+  it('reverse-sorted input', () => {
+    expect([...new SortedSet<number>([3, 2, 1])]).toEqual([1, 2, 3]);
+  });
+
+  it('duplicates are removed, keeping the first occurrence encountered by comparator', () => {
+    const set = new SortedSet<number>([3, 1, 2, 1, 3, 2, 1]);
+    expect([...set]).toEqual([1, 2, 3]);
+    expect(set.length).toBe(3);
+  });
+
+  it('custom comparator', () => {
+    const set = new SortedSet<number>([3, 1, 2], { comparator: (a, b) => b - a });
+    expect([...set]).toEqual([3, 2, 1]);
+  });
+
+  it('accepts a non-array iterable (generator) and dedupes it', () => {
+    function* gen(): Generator<number> {
+      yield 2;
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+    const set = new SortedSet<number>(gen());
+    expect([...set]).toEqual([1, 2, 3]);
+  });
+
+  describe('bucket-size boundaries (MIN_BUCKET_SIZE = 32)', () => {
+    it.each([31, 32, 33])('produces a correctly sorted, deduped set for n=%i', (n) => {
+      const shuffled = Array.from({ length: n }, (_, i) => i).sort(() => Math.random() - 0.5);
+      const withDuplicates = [...shuffled, ...shuffled];
+      const set = new SortedSet<number>(withDuplicates);
+      expect(set.length).toBe(n);
+      expect([...set]).toEqual(Array.from({ length: n }, (_, i) => i));
+    });
+  });
+
+  it('SortedSet.from() is equivalent to the constructor', () => {
+    expect([...SortedSet.from([3, 1, 2, 1])]).toEqual([...new SortedSet<number>([3, 1, 2, 1])]);
+    expect(SortedSet.from([3, 1, 2])).toBeInstanceOf(SortedSet);
+  });
+});
+
 describe('SortedSet — inherited SortedList behavior', () => {
   it('has/indexOf/at/remove/discard work as on SortedList', () => {
     const set = new SortedSet<number>([5, 1, 3]);

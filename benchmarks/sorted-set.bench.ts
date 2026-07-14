@@ -30,6 +30,32 @@ export async function runSortedSetInsertBenchmarks(size: number): Promise<void> 
   await runAndPrint(`SortedSet — insert n=${label} one at a time`, bench);
 }
 
+/**
+ * Bulk-construction benchmark: `new SortedSet(data)` (fromSorted + dedupe
+ * fast path) vs. the old behavior of building empty and calling `add()` per
+ * element — kept accessible here via a plain loop, even though the
+ * constructor no longer builds this way.
+ */
+export async function runSortedSetConstructionBenchmarks(size: number): Promise<void> {
+  const data = shuffledSequential(size);
+  const label = size.toLocaleString('en-US');
+
+  const bench = new Bench({ time: 500 });
+  bench
+    .add('new SortedSet(data) (bulk fromSorted)', () => {
+      new SortedSet<number>(data);
+    })
+    .add('empty SortedSet + add() per element (old path)', () => {
+      const set = new SortedSet<number>();
+      for (const v of data) set.add(v);
+    })
+    .add('sorted-containers new SortedSet(data)', () => {
+      new SCSortedSet<number>(data);
+    });
+
+  await runAndPrint(`SortedSet — construction from n=${label} elements`, bench);
+}
+
 export async function runSortedSetReadBenchmarks(size: number): Promise<void> {
   const data = shuffledSequential(size);
   const label = size.toLocaleString('en-US');

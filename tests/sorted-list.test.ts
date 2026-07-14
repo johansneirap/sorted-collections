@@ -250,6 +250,64 @@ describe('SortedList — bucket merging on removal', () => {
   });
 });
 
+describe('SortedList — bulk construction from an iterable', () => {
+  it('empty iterable', () => {
+    expect([...new SortedList<number>([])]).toEqual([]);
+    expect(new SortedList<number>([]).length).toBe(0);
+  });
+
+  it('single element', () => {
+    const list = new SortedList<number>([7]);
+    expect([...list]).toEqual([7]);
+    expect(list.length).toBe(1);
+  });
+
+  it('already sorted input', () => {
+    const values = [1, 2, 3, 4, 5];
+    expect([...new SortedList<number>(values)]).toEqual(values);
+  });
+
+  it('reverse-sorted input', () => {
+    const values = [5, 4, 3, 2, 1];
+    expect([...new SortedList<number>(values)]).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('duplicates are all retained', () => {
+    const list = new SortedList<number>([3, 1, 2, 1, 3, 2, 1]);
+    expect([...list]).toEqual([1, 1, 1, 2, 2, 3, 3]);
+    expect(list.length).toBe(7);
+  });
+
+  it('custom comparator', () => {
+    const list = new SortedList<number>([3, 1, 2], { comparator: (a, b) => b - a });
+    expect([...list]).toEqual([3, 2, 1]);
+  });
+
+  it('accepts a non-array iterable (generator)', () => {
+    function* gen(): Generator<number> {
+      yield 3;
+      yield 1;
+      yield 2;
+    }
+    const list = new SortedList<number>(gen());
+    expect([...list]).toEqual([1, 2, 3]);
+  });
+
+  describe('bucket-size boundaries (MIN_BUCKET_SIZE = 32)', () => {
+    it.each([31, 32, 33])('produces a correctly sorted list for n=%i', (n) => {
+      const shuffled = Array.from({ length: n }, (_, i) => i).sort(() => Math.random() - 0.5);
+      const list = new SortedList<number>(shuffled);
+      expect(list.length).toBe(n);
+      expect([...list]).toEqual(Array.from({ length: n }, (_, i) => i));
+    });
+  });
+
+  it('SortedList.from() is equivalent to the constructor', () => {
+    expect([...SortedList.from([3, 1, 2])]).toEqual([...new SortedList<number>([3, 1, 2])]);
+    expect(SortedList.from([3, 1, 2])).toBeInstanceOf(SortedList);
+  });
+});
+
 describe('SortedList — clear/clone', () => {
   it('clear() empties the list', () => {
     const list = new SortedList<number>([1, 2, 3]);
