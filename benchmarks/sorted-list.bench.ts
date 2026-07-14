@@ -33,6 +33,32 @@ export async function runSortedListInsertBenchmarks(size: number): Promise<void>
   await runAndPrint(`SortedList — insert n=${label} one at a time`, bench);
 }
 
+/**
+ * Bulk-construction benchmark: `new SortedList(data)` (fromSorted fast path)
+ * vs. the old behavior of building empty and calling `add()` per element —
+ * kept accessible here via a plain loop over the still-public `add()`, even
+ * though the constructor no longer builds this way.
+ */
+export async function runSortedListConstructionBenchmarks(size: number): Promise<void> {
+  const data = shuffledSequential(size);
+  const label = size.toLocaleString('en-US');
+
+  const bench = new Bench({ time: 500 });
+  bench
+    .add('new SortedList(data) (bulk fromSorted)', () => {
+      new SortedList<number>(data);
+    })
+    .add('empty SortedList + add() per element (old path)', () => {
+      const list = new SortedList<number>();
+      for (const v of data) list.add(v);
+    })
+    .add('sorted-containers new SortedArray(data)', () => {
+      new SortedArray<number>(data);
+    });
+
+  await runAndPrint(`SortedList — construction from n=${label} elements`, bench);
+}
+
 /** Read-heavy benchmarks: build once per size, then time only the read op. */
 export async function runSortedListReadBenchmarks(size: number): Promise<void> {
   const data = shuffledSequential(size);

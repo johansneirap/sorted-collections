@@ -55,6 +55,14 @@ interface BucketLocation {
 export class BucketEngine<T> implements Iterable<T> {
   private static readonly MIN_BUCKET_SIZE = 32;
 
+  /**
+   * Guards the O(n) sortedness check in {@link fromSorted}. `typeof process`
+   * keeps this safe to evaluate in a plain browser (no bundler define step)
+   * where `process` doesn't exist at runtime.
+   */
+  private static readonly isDevelopment =
+    typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+
   private buckets: T[][] = [];
   private count = 0;
   readonly comparator: Comparator<T>;
@@ -63,8 +71,46 @@ export class BucketEngine<T> implements Iterable<T> {
     this.comparator = comparator;
   }
 
+  private static targetBucketSizeFor(count: number): number {
+    return Math.max(BucketEngine.MIN_BUCKET_SIZE, Math.ceil(Math.sqrt(count)));
+  }
+
   private targetBucketSize(): number {
-    return Math.max(BucketEngine.MIN_BUCKET_SIZE, Math.ceil(Math.sqrt(this.count)));
+    return BucketEngine.targetBucketSizeFor(this.count);
+  }
+
+  /**
+   * Builds an engine directly from an array the caller guarantees is already
+   * sorted per `comparator` — skips the O(√n)-amortized-per-element `add()`
+   * path used by incremental construction in favor of one O(n) pass that
+   * slices straight into buckets sized for the final count.
+   *
+   * Internal-only: the precondition (sortedness) is the caller's
+   * responsibility. In non-production builds it's cheaply verified in O(n);
+   * that check is skipped in production since it doubles comparator calls
+   * for no benefit once the caller is trusted.
+   */
+  static fromSorted<T>(sortedArray: readonly T[], comparator: Comparator<T>): BucketEngine<T> {
+    const engine = new BucketEngine<T>(comparator);
+    const n = sortedArray.length;
+    if (n === 0) {
+      return engine;
+    }
+    if (BucketEngine.isDevelopment) {
+      for (let i = 1; i < n; i++) {
+        if (comparator(sortedArray[i - 1] as T, sortedArray[i] as T) > 0) {
+          throw new Error('BucketEngine.fromSorted: input array is not sorted per comparator');
+        }
+      }
+    }
+    const target = BucketEngine.targetBucketSizeFor(n);
+    const buckets: T[][] = [];
+    for (let i = 0; i < n; i += target) {
+      buckets.push(sortedArray.slice(i, i + target));
+    }
+    engine.buckets = buckets;
+    engine.count = n;
+    return engine;
   }
 
   private maybeSplit(bucketIndex: number): void {

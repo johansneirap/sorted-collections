@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { SortedMap } from '../src/sorted-map.js';
+import type { Comparator } from '../src/types.js';
 
 type Op = { type: 'set'; key: number; value: number } | { type: 'delete'; key: number };
 
@@ -96,6 +97,29 @@ describe('SortedMap — property-based (fast-check)', () => {
           const reference = new Map<number, number>(entries);
           const expected = sortedEntries(reference).filter(([k]) => k >= min && k <= max);
           expect([...map.irange(min, max)]).toEqual(expected);
+        },
+      ),
+      { numRuns: 300 },
+    );
+  });
+
+  it('constructing from a random entries iterable matches building empty + set() per entry, including custom key comparators', () => {
+    const comparatorArbitrary = fc.constantFrom<Comparator<number>>(
+      (a, b) => a - b,
+      (a, b) => b - a,
+      (a, b) => Math.abs(a) - Math.abs(b),
+      (a, b) => (((a % 5) + 5) % 5) - (((b % 5) + 5) % 5),
+    );
+    fc.assert(
+      fc.property(
+        fc.array(fc.tuple(fc.integer({ min: -30, max: 30 }), fc.integer()), { maxLength: 200 }),
+        comparatorArbitrary,
+        (entries, comparator) => {
+          const built = new SortedMap<number, number>(entries, { comparator });
+          const incremental = new SortedMap<number, number>(undefined, { comparator });
+          for (const [key, value] of entries) incremental.set(key, value);
+          expect([...built]).toEqual([...incremental]);
+          expect(built.size).toBe(incremental.size);
         },
       ),
       { numRuns: 300 },

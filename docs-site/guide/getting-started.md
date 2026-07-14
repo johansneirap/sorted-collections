@@ -53,6 +53,19 @@ byPrice.set(99.75, 'order-2');
 [...byPrice.keys()]; // [99.75, 101.5]
 ```
 
+## Building from an existing iterable
+
+Passing an iterable to the constructor builds in bulk — sorts once, then cuts directly
+into buckets — rather than inserting one element at a time. `SortedList.from`,
+`SortedSet.from`, and `SortedMap.from` are equivalent sugar, paralleling `Array.from`:
+
+```ts
+const scores = SortedList.from([42, 7, 99]); // same as new SortedList([42, 7, 99])
+const tags = SortedSet.from(['b', 'a', 'c', 'a']); // dedupes: ['a', 'b', 'c']
+```
+
+See [Benchmarks](/benchmarks) for what bulk construction is worth at scale.
+
 ## Custom comparators
 
 Without a comparator, elements sort by natural order for `number` and `string`. Any
