@@ -16,6 +16,22 @@ time only the read operation, so they run up to n=100,000. Construction benchmar
 
 ## SortedList
 
+<BenchmarkChart
+  mode="magnitude"
+  series-a="SortedList"
+  series-b="Array (naive)"
+  unit="/s"
+  :rows="[
+    { label: 'add()', a: 3146, b: 12 },
+    { label: 'has()', a: 20224, b: 67 },
+    { label: 'at(index)', a: 4474, b: 758064 },
+    { label: 'iteration', a: 1114, b: 2577 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
+
 | Operation | `SortedList` | `Array` (naive) |
 |---|---:|---:|
 | `add()`, one at a time, n=5,000 | 3,146/s | 12/s |
@@ -23,13 +39,46 @@ time only the read operation, so they run up to n=100,000. Construction benchmar
 | `at(index)`, n=100,000 | 4,474/s | 758,064/s (native indexing) |
 | full iteration, n=100,000 | 1,114/s | 2,577/s |
 
+</details>
+
+<BenchmarkChart
+  mode="ratio"
+  series-a=".from() (bulk)"
+  series-b="per-element"
+  :rows="[
+    { label: 'n=1,000', a: 17316, b: 32250 },
+    { label: 'n=100,000', a: 85, b: 93 },
+    { label: 'n=1,000,000', a: 7, b: 5 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
+
 | Construction | bulk (`new SortedList(data)`) | per-element (`add()` in a loop) |
 |---|---:|---:|
 | n=1,000 | 17,316/s | 32,250/s |
 | n=100,000 | 85/s | 93/s |
 | n=1,000,000 | 7/s | 5/s |
 
+</details>
+
 ## SortedSet
+
+<BenchmarkChart
+  mode="magnitude"
+  series-a="SortedSet"
+  series-b="native Set"
+  unit="/s"
+  :rows="[
+    { label: 'add()', a: 2092, b: 12923 },
+    { label: 'has()', a: 20121, b: 835314 },
+    { label: 'iteration', a: 1117, b: 2577 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
 
 | Operation | `SortedSet` | native `Set` |
 |---|---:|---:|
@@ -37,13 +86,46 @@ time only the read operation, so they run up to n=100,000. Construction benchmar
 | `has()`, n=100,000 | 20,121/s | 835,314/s |
 | full iteration, n=100,000 | 1,117/s | 2,577/s |
 
+</details>
+
+<BenchmarkChart
+  mode="ratio"
+  series-a=".from() (bulk)"
+  series-b="per-element"
+  :rows="[
+    { label: 'n=1,000', a: 16065, b: 20200 },
+    { label: 'n=100,000', a: 79, b: 55 },
+    { label: 'n=1,000,000', a: 7, b: 3 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
+
 | Construction | bulk (`new SortedSet(data)`) | per-element (`add()` in a loop) |
 |---|---:|---:|
 | n=1,000 | 16,065/s | 20,200/s |
 | n=100,000 | 79/s | 55/s |
 | n=1,000,000 | 7/s | 3/s |
 
+</details>
+
 ## SortedMap
+
+<BenchmarkChart
+  mode="magnitude"
+  series-a="SortedMap"
+  series-b="native Map"
+  unit="/s"
+  :rows="[
+    { label: 'set()', a: 1397, b: 7056 },
+    { label: 'get()', a: 12453, b: 834080 },
+    { label: 'iteration', a: 1005, b: 2473 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
 
 | Operation | `SortedMap` | native `Map` |
 |---|---:|---:|
@@ -51,11 +133,29 @@ time only the read operation, so they run up to n=100,000. Construction benchmar
 | `get()`, n=100,000 | 12,453/s | 834,080/s |
 | full iteration, n=100,000 | 1,005/s | 2,473/s |
 
+</details>
+
+<BenchmarkChart
+  mode="ratio"
+  series-a=".from() (bulk)"
+  series-b="per-element"
+  :rows="[
+    { label: 'n=1,000', a: 14121, b: 12476 },
+    { label: 'n=100,000', a: 56, b: 33 },
+    { label: 'n=1,000,000', a: 3, b: 1 },
+  ]"
+/>
+
+<details>
+<summary>See exact numbers</summary>
+
 | Construction | bulk (`new SortedMap(entries)`) | per-element (`set()` in a loop) |
 |---|---:|---:|
 | n=1,000 | 14,121/s | 12,476/s |
 | n=100,000 | 56/s | 33/s |
 | n=1,000,000 | 3/s | 1/s |
+
+</details>
 
 ## Bulk construction: when the old per-element path still wins
 
